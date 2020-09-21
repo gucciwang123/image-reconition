@@ -52,12 +52,14 @@ vector_d_cost = np.vectorize(d_cost)
 
 def backpropagation(nodeValues, expectedValues):
     gradient = g_weights, g_biases = [], []
-    g_node = np.array(vector_d_cost(nodeValues[:, numOfLayers - 1], expectedValues))
+    g_node = np.array(vector_d_cost(nodeValues[numOfLayers - 1], expectedValues))
 
     for x in range(0, numOfLayers - 1):
         g_node *= vector_d_stigmoid(vector_r_stigmoid(nodeValues[-1 * (x + 1)]))
-
-
+        g_biases.append(np.array(g_node))
+        g_weights.append(np.resize(nodeValues[-1 * (x + 1)], (numOfNodes[-1 * (x + 1)], numOfNodes[-1 * (x + 2)])) *
+                         np.transpose(np.resize(nodeValues[-1 * (x + 1)], (numOfNodes[-1 * (x + 2)], numOfNodes[-1 * (x + 1)]))))
+        g_node = np.matmul(np.transpose(weights[-1 * (x + 1)]), g_node)
     return gradient
 
 #script
