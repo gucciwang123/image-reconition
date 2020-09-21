@@ -1,12 +1,15 @@
 import numpy as np
 import math
+from matplotlib import pyplot as plot
 import time
 
 #information about network to be trained
-numOfPixles = 5 #change this value to for different number of pixles
-numOfNodes = [numOfPixles, 10, 20, 1] #length must match number of layers
+numOfPixles = 128 #change this value to for different number of pixles
+numOfNodes = [numOfPixles, 16, 16, 10] #length must match number of layers
 numOfLayers = 4 #change this for different number of layers in neural network
-learningrate = 0.5 #change this value to receive different leaning rates
+learningrate = 0.1 #change this value to receive different leaning rates
+runsPerEvolution = 10 #change this for more runs for every evolution of the neural network
+numOfEvolutions = 1000 #change this for number of iterations to run
 
 #loging
 logging = False;
@@ -71,16 +74,12 @@ def applyGradient(weights_gradient, bias_gradient):
         weights[x] +=  weights_gradient[x] * learningrate
         biases[x] += bias_gradient[x] * learningrate
 
+
 #script
-logging = True
 
-for x in range(0, 10000):
-    output = runNeuralNetwork([0.3, 0.2, 0.5, 0.2, 0.8])
-    gradientVector = backpropagation(output, np.array([.5]))
-    for y in output[3].tolist():
-        print(str(x) + ": Value of output = "+ str(y))
-    log(str(x) + ": Cost of run: " + str(cost(output[3].tolist()[0], 0.5)))
-    log("_____________________________________")
-    applyGradient(gradientVector[0], gradientVector[1])
+def run():
+    logging = True
 
-
+    for x in range(0, numOfEvolutions):
+        #ai loop
+run()
