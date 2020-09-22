@@ -1,17 +1,18 @@
 import numpy as np
 import math
 import struct
+from numba import jit
 import PIL as pillow
 from matplotlib import pyplot as plot
 import time
 
 #information about network to be trained
-numOfPixles = 128 #change this value to for different number of pixles
-numOfNodes = [numOfPixles, 16, 16, 10] #length must match number of layers
+numOfPixles = 784 #change this value to for different number of pixles
+numOfNodes = [numOfPixles, 24, 16, 10] #length must match number of layers
 numOfLayers = 4 #change this for different number of layers in neural network
-learningrate = 0.1 #change this value to receive different leaning rates
+learningrate = 0.05 #change this value to receive different leaning rates
 runsPerEvolution = 10 #change this for more runs for every evolution of the neural network
-numOfEvolutions = 1000 #change this for number of iterations to run
+numOfEvolutions = 6000 #change this for number of iterations to run
 
 #loging
 logging = False;
@@ -32,6 +33,7 @@ vector_stigmoid = np.vectorize(stigmoid)
 weights = [(np.random.rand(numOfNodes[x], numOfNodes[x - 1]) - 0.5) * 12 for x in range(1, numOfLayers)]
 biases = [(np.random.rand(numOfNodes[x]) - 0.5) * 12 for x in range(1, numOfLayers)]
 
+@jit()
 def runNeuralNetwork(input): #give pixle values in 32-bit floats. Length must mach numOfPixles
     nodeValues = [np.array(input)]
     for x in range(0, numOfLayers - 1):
@@ -49,6 +51,10 @@ def d_stigmoid(x):
 vector_d_stigmoid = np.vectorize(d_stigmoid)
 
 def r_stigmoid(x):
+    if x >= 1:
+        return 1
+    if x <= 0:
+        return 0
     return math.log(x/(1 - x));
 vector_r_stigmoid = np.vectorize(r_stigmoid)
 
@@ -56,8 +62,9 @@ def d_cost(out, expected):
     return 2 * (expected - out)
 vector_d_cost = np.vectorize(d_cost)
 
+@jit()
 def backpropagation(nodeValues, expectedValues):
-    gradient = g_weights, g_biases = [], []
+    g_weights, g_biases = [], []
     g_node = np.array(vector_d_cost(nodeValues[numOfLayers - 1], expectedValues))
 
     for x in range(0, numOfLayers - 1):
@@ -69,8 +76,9 @@ def backpropagation(nodeValues, expectedValues):
                          )
         g_node = np.matmul(np.transpose(weights[-1 * (x + 1)]), g_node)
 
-    return gradient
+    return (g_weights, g_biases)
 
+@jit()
 def applyGradient(weights_gradient, bias_gradient):
     for x in range(0, numOfLayers - 1):
         weights[x] +=  weights_gradient[x] * learningrate
@@ -95,17 +103,39 @@ def readImages():
     f_images.close()
 
     #parsing lables
-    buffer = struct.unpack("b" * (28 * 28 * 60000), f_labels.read())
+    buffer = struct.unpack("b" * (60000), f_lables.read())
     for x in range(0, 60000):
-        lables.append(buffer[x * 28 * 28: x * 28 * 28 + 28 * 28])
-    f_labels.close()
+        lables.append(buffer[x])
+    f_lables.close()
 
     return (images, lables)
 
 def run():
     logging = True
-    data = readImages()
-    image = pillow.Image.frombytes(1, (28, 28), data)
-    image.save("penis.bmp")
+    images, lables = readImages()
+    for w in range(100):
+        for x in range(numOfEvolutions):
+            g_weights, g_bias, expected = [], [], [0 for x in range(10)]
+            print("\tEvolution" + str(x))\
 
+            for y in range(runsPerEvolution):
+                print("\tRun: " + str(y + 1))
+                buffer = np.array(images[x * runsPerEvolution + y], np.float) * 1.0/256
+                nodeActivation = runNeuralNetwork(buffer)
+                expected[lables[x * runsPerEvolution + y]] = 1
+
+                gradient = backpropagation(nodeActivation, np.array(expected))
+                g_weights.append(gradient[0])
+                g_bias.append(gradient[1])
+
+                print("\t\tCost for run: " + str(np.dot(np.full((numOfNodes[-1]), 1.0/numOfNodes[-1]), vector_cost(nodeActivation[-1], np.array(expected)))))
+
+                print("\t\tAnswer: " + str((nodeActivation[-1].tolist()).index(max(nodeActivation[-1].tolist()))))
+                if (nodeActivation[-1].tolist()).index(max(nodeActivation[-1].tolist())) == lables[x * runsPerEvolution + y]:
+                    print("Correct")
+                else:
+                    print("No")
+
+            for y in range(runsPerEvolution):
+                applyGradient(g_weights[y], g_bias[y])
 run()
