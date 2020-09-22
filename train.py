@@ -8,11 +8,11 @@ import time
 
 #information about network to be trained
 numOfPixles = 784 #change this value to for different number of pixles
-numOfNodes = [numOfPixles, 24, 16, 10] #length must match number of layers
+numOfNodes = [numOfPixles, 16, 16, 10] #length must match number of layers
 numOfLayers = 4 #change this for different number of layers in neural network
-learningrate = 0.05 #change this value to receive different leaning rates
-runsPerEvolution = 10 #change this for more runs for every evolution of the neural network
-numOfEvolutions = 6000 #change this for number of iterations to run
+learningrate = 1.0E-7 #change this value to receive different leaning rates
+runsPerEvolution = 1000 #change this for more runs for every evolution of the neural network
+numOfEvolutions = 60 #change this for number of iterations to run
 
 #loging
 logging = False;
@@ -47,7 +47,7 @@ def cost(out, expected):
 vector_cost = np.vectorize(cost)
 
 def d_stigmoid(x):
-    return 1/(math.exp(x) * math.pow(1 + math.exp(-x), 2))
+    return stigmoid(x) * (1 - stigmoid(x))
 vector_d_stigmoid = np.vectorize(d_stigmoid)
 
 def r_stigmoid(x):
@@ -116,10 +116,9 @@ def run():
     for w in range(100):
         for x in range(numOfEvolutions):
             g_weights, g_bias, expected = [], [], [0 for x in range(10)]
-            print("\tEvolution" + str(x))\
 
             for y in range(runsPerEvolution):
-                print("\tRun: " + str(y + 1))
+                print(str(w) + "\tEvolution: " + str (x) + " Run: " + str(y + 1))
                 buffer = np.array(images[x * runsPerEvolution + y], np.float) * 1.0/256
                 nodeActivation = runNeuralNetwork(buffer)
                 expected[lables[x * runsPerEvolution + y]] = 1
@@ -128,7 +127,7 @@ def run():
                 g_weights.append(gradient[0])
                 g_bias.append(gradient[1])
 
-                print("\t\tCost for run: " + str(np.dot(np.full((numOfNodes[-1]), 1.0/numOfNodes[-1]), vector_cost(nodeActivation[-1], np.array(expected)))))
+                print("Cost for run: " + str(np.dot(np.full((numOfNodes[-1]), 1.0/numOfNodes[-1]), vector_cost(nodeActivation[-1], np.array(expected)))))
 
                 print("\t\tAnswer: " + str((nodeActivation[-1].tolist()).index(max(nodeActivation[-1].tolist()))))
                 if (nodeActivation[-1].tolist()).index(max(nodeActivation[-1].tolist())) == lables[x * runsPerEvolution + y]:
