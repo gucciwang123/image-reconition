@@ -131,17 +131,18 @@ def run():
                 g_weights.append(gradient[0])
                 g_bias.append(gradient[1])
 
-                print("Cost for run: " + str(np.dot(np.full((numOfNodes[-1]), 1.0/numOfNodes[-1]), vector_cost(nodeActivation[-1], np.array(expected)))))
+                print("Cost for run: " + str(np.dot(np.full((numOfNodes[-1]), 1.0/numOfNodes[-1]), vector_cost(nodeActivation[-1], np.array(expected)))), end=" ")
 
                 print("\t\tAnswer: " + str((nodeActivation[-1].tolist()).index(max(nodeActivation[-1].tolist()))))
+
                 if (nodeActivation[-1].tolist()).index(max(nodeActivation[-1].tolist())) == lables[x * runsPerEvolution + y]:
                     print("Correct", end="")
                 else:
                     print("No", end="")
 
                 for z in nodeActivation[-1].tolist():
-                    print(" " + str(x) + " ", end="")
-
+                    print(" " + str(z) + " ", end="")
+                print("\n___________________________________")
             for y in range(runsPerEvolution):
                 applyGradient(g_weights[y], g_bias[y])
 
