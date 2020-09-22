@@ -2,7 +2,6 @@ import numpy as np
 import math
 import struct
 from numba import jit
-import PIL as pillow
 from matplotlib import pyplot as plot
 import time
 
@@ -10,9 +9,12 @@ import time
 numOfPixles = 784 #change this value to for different number of pixles
 numOfNodes = [numOfPixles, 16, 16, 10] #length must match number of layers
 numOfLayers = 4 #change this for different number of layers in neural network
-learningrate = 1.0E-7 #change this value to receive different leaning rates
-runsPerEvolution = 1000 #change this for more runs for every evolution of the neural network
+learningrate = 1.0E-9 #change this value to receive different leaning rates
+runsPerEvolution =1000 #change this for more runs for every evolution of the neural network
 numOfEvolutions = 60 #change this for number of iterations to run
+readFile = True #change to true if reading in a neural network
+networkName = "train"
+numOfIterations = 500 #change for the training run to be iterated a differnent amount of times
 
 #loging
 logging = False;
@@ -20,18 +22,18 @@ def log(message):
     if logging:
         print(message)
 
-#data parsing
-def openImage(path):
-    pass
-
 #neural network
 def stigmoid(x):
     return 1/(1 + math.exp(-1 * x))
 vector_stigmoid = np.vectorize(stigmoid)
 
 #init weights and biases
-weights = [(np.random.rand(numOfNodes[x], numOfNodes[x - 1]) - 0.5) * 12 for x in range(1, numOfLayers)]
-biases = [(np.random.rand(numOfNodes[x]) - 0.5) * 12 for x in range(1, numOfLayers)]
+if readFile:
+    weights = [np.load(networkName + ".w." + str(x) + ".npy", allow_pickle=True) for x in range(numOfLayers - 1)]
+    biases = [np.load(networkName + ".b." + str(x) + ".npy", allow_pickle=True) for x in range(numOfLayers - 1)]
+else:
+    weights = [(np.random.rand(numOfNodes[x], numOfNodes[x - 1]) - 0.5) * 6 for x in range(1, numOfLayers)]
+    biases = [(np.random.rand(numOfNodes[x]) - 0.5) * 6 for x in range(1, numOfLayers)]
 
 @jit()
 def runNeuralNetwork(input): #give pixle values in 32-bit floats. Length must mach numOfPixles
@@ -113,11 +115,11 @@ def readImages():
 def run():
     logging = True
     images, lables = readImages()
-    for w in range(100):
+    for w in range(numOfIterations):
         for x in range(numOfEvolutions):
             g_weights, g_bias, expected = [], [], [0 for x in range(10)]
 
-            for y in range(runsPerEvolution):
+            for y in range(0, runsPerEvolution):
                 print(str(w) + "\tEvolution: " + str (x) + " Run: " + str(y + 1))
                 buffer = np.array(images[x * runsPerEvolution + y], np.float) * 1.0/256
                 nodeActivation = runNeuralNetwork(buffer)
@@ -137,4 +139,8 @@ def run():
 
             for y in range(runsPerEvolution):
                 applyGradient(g_weights[y], g_bias[y])
+
+        for x in range(numOfLayers - 1):
+            np.save(networkName + ".w." + str(x), weights[x])
+            np.save(networkName + ".b."  + str(x), biases[x])
 run()
