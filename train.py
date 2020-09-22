@@ -9,12 +9,12 @@ import time
 numOfPixles = 784 #change this value to for different number of pixles
 numOfNodes = [numOfPixles, 16, 16, 10] #length must match number of layers
 numOfLayers = 4 #change this for different number of layers in neural network
-learningrate = 1.0E-9 #change this value to receive different leaning rates
+learningrate = 1.0E-1 #change this value to receive different leaning rates
 runsPerEvolution =1000 #change this for more runs for every evolution of the neural network
 numOfEvolutions = 60 #change this for number of iterations to run
-readFile = True #change to true if reading in a neural network
-networkName = "train"
-numOfIterations = 500 #change for the training run to be iterated a differnent amount of times
+readFile = False #change to true if reading in a neural network
+networkName = "numreconition"
+numOfIterations = 20 #change for the training run to be iterated a differnent amount of times
 
 #loging
 logging = False;
@@ -123,6 +123,8 @@ def run():
                 print(str(w) + "\tEvolution: " + str (x) + " Run: " + str(y + 1))
                 buffer = np.array(images[x * runsPerEvolution + y], np.float) * 1.0/256
                 nodeActivation = runNeuralNetwork(buffer)
+
+                expected = [0 for x in range(10)]
                 expected[lables[x * runsPerEvolution + y]] = 1
 
                 gradient = backpropagation(nodeActivation, np.array(expected))
@@ -133,9 +135,12 @@ def run():
 
                 print("\t\tAnswer: " + str((nodeActivation[-1].tolist()).index(max(nodeActivation[-1].tolist()))))
                 if (nodeActivation[-1].tolist()).index(max(nodeActivation[-1].tolist())) == lables[x * runsPerEvolution + y]:
-                    print("Correct")
+                    print("Correct", end="")
                 else:
-                    print("No")
+                    print("No", end="")
+
+                for z in nodeActivation[-1].tolist():
+                    print(" " + str(x) + " ", end="")
 
             for y in range(runsPerEvolution):
                 applyGradient(g_weights[y], g_bias[y])
