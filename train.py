@@ -9,15 +9,15 @@ import time
 numOfPixles = 784 #change this value to for different number of pixles
 numOfNodes = [numOfPixles, 16, 16, 10] #length must match number of layers
 numOfLayers = 4 #change this for different number of layers in neural network
-learningrate = 1.0E-1 #change this value to receive different leaning rates
+learningrate = 1.0E-7 #change this value to receive different leaning rates
 runsPerEvolution =1000 #change this for more runs for every evolution of the neural network
 numOfEvolutions = 60 #change this for number of iterations to run
-readFile = False #change to true if reading in a neural network
+readFile = True #change to true if reading in a neural network
 networkName = "numreconition"
-numOfIterations = 20 #change for the training run to be iterated a differnent amount of times
+numOfIterations = 100 #change for the training run to be iterated a differnent amount of times
 
 #loging
-logging = False;
+logging = False
 def log(message):
     if logging:
         print(message)
@@ -57,7 +57,7 @@ def r_stigmoid(x):
         return 1
     if x <= 0:
         return 0
-    return math.log(x/(1 - x));
+    return math.log(x/(1 - x))
 vector_r_stigmoid = np.vectorize(r_stigmoid)
 
 def d_cost(out, expected):
@@ -131,14 +131,15 @@ def run():
                 g_weights.append(gradient[0])
                 g_bias.append(gradient[1])
 
-                print("Cost for run: " + str(np.dot(np.full((numOfNodes[-1]), 1.0/numOfNodes[-1]), vector_cost(nodeActivation[-1], np.array(expected)))), end=" ")
+                print("Cost for run: " + str(np.dot(np.full((numOfNodes[-1]), 1.0/numOfNodes[-1]), vector_cost(nodeActivation[-1], np.array(expected)))))
 
-                print("\t\tAnswer: " + str((nodeActivation[-1].tolist()).index(max(nodeActivation[-1].tolist()))))
+                print("\t\tAnswer: " + str((nodeActivation[-1].tolist()).index(max(nodeActivation[-1].tolist()))), end=" ")
+                print("\tCorrect: " + str(lables[x * runsPerEvolution + y]))
 
                 if (nodeActivation[-1].tolist()).index(max(nodeActivation[-1].tolist())) == lables[x * runsPerEvolution + y]:
-                    print("Correct", end="")
+                    print("Correct")
                 else:
-                    print("No", end="")
+                    print("No")
 
                 for z in nodeActivation[-1].tolist():
                     print(" " + str(z) + " ", end="")
