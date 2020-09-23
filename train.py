@@ -57,7 +57,7 @@ def r_stigmoid(x):
         return 1
     if x <= 0:
         return 0
-    return math.log(x/(1 - x));
+    return math.log(x/(1 - x))
 vector_r_stigmoid = np.vectorize(r_stigmoid)
 
 def d_cost(out, expected):
@@ -85,7 +85,6 @@ def applyGradient(weights_gradient, bias_gradient):
     for x in range(0, numOfLayers - 1):
         weights[x] +=  weights_gradient[x] * learningrate
         biases[x] += bias_gradient[x] * learningrate
-
 
 #script
 def readImages():
