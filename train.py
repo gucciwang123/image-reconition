@@ -89,28 +89,7 @@ def applyGradient(weights_gradient, bias_gradient):
 
 #script
 def readImages():
-    f_images = open("Images/images", "rb")
-    f_lables = open("Images/labels", "rb")
-
-    f_images.seek(16, 0)
-    f_lables.seek(8, 0)
-
-    images = []
-    lables = []
-
-    #parsing images
-    buffer = struct.unpack("B" * (28 * 28 * 60000), f_images.read())
-    for x in range(0, 60000):
-        images.append(buffer[x * 28 * 28 : x * 28 * 28 + 28 * 28])
-    f_images.close()
-
-    #parsing lables
-    buffer = struct.unpack("b" * (60000), f_lables.read())
-    for x in range(0, 60000):
-        lables.append(buffer[x])
-    f_lables.close()
-
-    return (images, lables)
+    #add data parsing data here
 
 def run():
     logging = True
