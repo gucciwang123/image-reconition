@@ -62,11 +62,11 @@ def runNetwork(x): #input a numpy vector of initial node activations; returns ar
 @jit()
 def backprogation(nodeValues, expectedValues):
     g_weights, g_biases = [], []
-    g_node = np.array(d_cost(nodeValues[numOfLayers - 1], expectedValues), order="C")
+    g_node = np.array(d_cost(nodeValues[numOfLayers - 1], expectedValues))
 
     for x in range(0, numOfLayers - 1):
         g_node *= d_stigmoid(r_stigmoid(nodeValues[-1 * (x + 1)]))
-        g_biases.insert(0, np.array(g_node, order="C"))
+        g_biases.insert(0, np.array(g_node))
         g_weights.insert(0,
                          np.transpose(np.resize(g_node, (numOfNodes[-1 * (x + 2)], numOfNodes[-1 * (x + 1)]))) *
                          np.resize(nodeValues[-1 * (x + 1)], (numOfNodes[-1 * (x + 1)], numOfNodes[-1 * (x + 2)]))
@@ -114,17 +114,17 @@ def run():
 
             for y in range(0, runsPerEvolution):
                 print(str(w) + "\tEvolution: " + str (x) + " Run: " + str(y + 1))
-                buffer = np.array(images[x * runsPerEvolution + y], order="C") * 1.0/256
+                buffer = np.array(images[x * runsPerEvolution + y]) * 1.0/256
                 nodeActivation = runNetwork(buffer)
 
                 expected = [0 for x in range(10)]
                 expected[lables[x * runsPerEvolution + y]] = 1
 
-                gradient = backprogation(nodeActivation, np.array(expected, order="C"))
+                gradient = backprogation(nodeActivation, np.array(expected, dtype='float64'))
                 g_weights.append(gradient[0])
                 g_bias.append(gradient[1])
 
-                print("Cost for run: " + str(np.dot(np.full((numOfNodes[-1]), 1.0/numOfNodes[-1]), cost(nodeActivation[-1], np.array(expected, order="C")))))
+                print("Cost for run: " + str(np.dot(np.full((numOfNodes[-1]), 1.0/numOfNodes[-1]), cost(nodeActivation[-1], np.array(expected)))))
 
                 print("\t\tAnswer: " + str((nodeActivation[-1].tolist()).index(max(nodeActivation[-1].tolist()))))
                 if (nodeActivation[-1].tolist()).index(max(nodeActivation[-1].tolist())) == lables[x * runsPerEvolution + y]:
